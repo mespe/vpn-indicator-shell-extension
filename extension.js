@@ -13,12 +13,9 @@ const VpnIndicator = new Lang.Class({
 
     _init: function() {
         this.parent(0.0, "VPN Indicator", false);
-        this.buttonText = new St.Label({
-            text: _("Loading..."),
-            y_align: Clutter.ActorAlign.CENTER
-        });
+        this.buttonIcon = this._icon = new St.Icon({ icon_name: 'network-vpn-disconnected-symbolic', style_class: 'system-status-icon' })
 
-        this.actor.add_actor(this.buttonText);
+        this.actor.add_actor(this.buttonIcon);
         this._refresh();
     },
 
@@ -40,17 +37,17 @@ const VpnIndicator = new Lang.Class({
     },
 
     _refreshUI: function(data) {
-        var text;
+        var icon;
 
         if (data == 256) {
-            text = "VPN is down!";
+            icon = "network-vpn-disconnected-symbolic";
         } else if (data == 0) {
-            text = "VPN is up!";
+            icon = "network-vpn-symbolic";
         } else {
-            text = "Error!";
+            icon = "network-vpn-error-symbolic";
         }
 
-        this.buttonText.set_text(text);
+        this.buttonIcon.set_icon_name(icon);
     }
 });
 
