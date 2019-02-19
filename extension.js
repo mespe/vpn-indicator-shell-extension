@@ -1,31 +1,28 @@
-const St = imports.gi.St;
 const Main = imports.ui.main;
 const Lang = imports.lang;
-const Util = imports.misc.util;
 const PanelMenu = imports.ui.panelMenu;
 const Mainloop = imports.mainloop;
 const GLib = imports.gi.GLib;
-const Clutter = imports.gi.Clutter;
 
-const VpnIndicator = new Lang.Class({
-    Name: 'VpnIndicator',
-    Extends: PanelMenu.Button,
+class VpnIndicator extends PanelMenu.SystemIndicator {
+    _init() {
+        super._init();
 
-    _init: function() {
-        this.parent(0.0, "VPN Indicator", false);
-        this.buttonIcon = this._icon = new St.Icon({ icon_name: 'network-vpn-disconnected-symbolic', style_class: 'system-status-icon' })
+        this._indicator = this._addIndicator();
+        this._indicator.icon_name = 'network-vpn-disconnected-symbolic';
 
-        this.actor.add_actor(this.buttonIcon);
+        Main.panel.statusArea.aggregateMenu._indicators.insert_child_at_index(this.indicators, 0);
+
         this._refresh();
-    },
+    }
 
-    _checkVPN: function() {
+    _checkVPN() {
         let [res, out, err, exit] = GLib.spawn_sync(null, ["/bin/bash", "-c", "ifconfig -a | grep tun0"], null, GLib.SpawnFlags.SEARCH_PATH, null);
 
         return exit;
-    },
+    }
 
-    _refresh: function() {
+    _refresh() {
         this._refreshUI(this._checkVPN());
 
         if (this._timeout) {
@@ -34,33 +31,33 @@ const VpnIndicator = new Lang.Class({
         }
 
         this._timeout = Mainloop.timeout_add_seconds(2, Lang.bind(this, this._refresh));
-    },
-
-    _refreshUI: function(data) {
-        var icon;
-
-        if (data == 256) {
-            icon = "network-vpn-disconnected-symbolic";
-        } else if (data == 0) {
-            icon = "network-vpn-symbolic";
-        } else {
-            icon = "network-vpn-error-symbolic";
-        }
-
-        this.buttonIcon.set_icon_name(icon);
     }
-});
 
-let twMenu;
+    _refreshUI(data) {
+        if (data == 256) {
+            this._indicator.icon_name = "network-vpn-disconnected-symbolic";
+        } else if (data == 0) {
+            this._indicator.icon_name = "network-vpn-symbolic";
+        } else {
+            this._indicator.icon_name = "network-vpn-error-symbolic";
+        }
+    }
+
+    destroy() {
+        this.indicators.destroy();
+    }
+}
+
+let vpnIndicator = null;
 
 function init() {
+
 }
 
 function enable() {
-    twMenu = new VpnIndicator;
-    Main.panel.addToStatusArea('vpn-indicator', twMenu);
+    vpnIndicator = new VpnIndicator;
 }
 
 function disable() {
-    twMenu.destroy();
+    vpnIndicator.destroy();
 }
