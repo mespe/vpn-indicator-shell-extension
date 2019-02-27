@@ -9,7 +9,7 @@ class VpnIndicator extends PanelMenu.SystemIndicator {
         super._init();
 
         this._indicator = this._addIndicator();
-        this._indicator.icon_name = 'network-vpn-disconnected-symbolic';
+        this._indicator.icon_name = 'network-vpn-no-route-symbolic';
 
         Main.panel.statusArea.aggregateMenu._indicators.insert_child_at_index(this.indicators, 0);
 
@@ -17,7 +17,7 @@ class VpnIndicator extends PanelMenu.SystemIndicator {
     }
 
     _checkVPN() {
-        let [res, out, err, exit] = GLib.spawn_sync(null, ["/bin/bash", "-c", "ifconfig -a | grep tun0"], null, GLib.SpawnFlags.SEARCH_PATH, null);
+        let [res, out, err, exit] = GLib.spawn_sync(null, ["/bin/bash", "-c", "ip link | grep tun0"], null, GLib.SpawnFlags.SEARCH_PATH, null);
 
         return exit;
     }
@@ -35,11 +35,11 @@ class VpnIndicator extends PanelMenu.SystemIndicator {
 
     _refreshUI(data) {
         if (data == 256) {
-            this._indicator.icon_name = "network-vpn-disconnected-symbolic";
+            this._indicator.icon_name = "network-vpn-no-route-symbolic";
         } else if (data == 0) {
             this._indicator.icon_name = "network-vpn-symbolic";
         } else {
-            this._indicator.icon_name = "network-vpn-error-symbolic";
+            this._indicator.icon_name = "network-error-symbolic";
         }
     }
 
